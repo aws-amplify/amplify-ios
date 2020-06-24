@@ -155,12 +155,20 @@ jobs:
     description: deploy pods to trunk
     steps: 
       - *restore_repo
+      - run: pod install
       - restore_gems
       - check_bundle
       - run:
           name: Release pods
           command: bundle exec fastlane release_pods
           no_output_timeout: 20m
+      # TODO: uncomment once we've added a User Key in CircleCI
+      # - add_ssh_keys:
+      #     fingerprints:
+      #       - "insert:user:key:fingerprint"
+      - run:
+          name: Generate API docs
+          command: bundle exec fastlane generate_docs
 
 workflows:
   build_test_deploy:
