@@ -5,35 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Combine
-import XCTest
-
+import Foundation
 import Amplify
-@testable import AmplifyTestCommon
-
-@available(iOS 13.0, *)
-class AmplifyOperationCombineTests: XCTestCase {
-
-    func testResultPublisher() {
-
-    }
-
-}
-
-struct MockPublisherRequest: AmplifyOperationRequest {
-    struct Options { }
-    let options = Options()
-}
-
-extension HubPayloadEventName {
-    static var mockPublisherOperation = "MockPublisherOperation"
-}
 
 class MockPublisherOperation: AmplifyOperation<MockPublisherRequest, Int, APIError> {
     typealias Responder = (MockPublisherOperation) -> Void
     let responder: Responder
 
-    init(responder: @escaping Responder, resultListener: ResultListener?) {
+    init(responder: @escaping Responder, resultListener: ResultListener? = nil) {
         self.responder = responder
         super.init(
             categoryType: .api,
@@ -44,7 +23,9 @@ class MockPublisherOperation: AmplifyOperation<MockPublisherRequest, Int, APIErr
     }
 
     override func main() {
-        responder(self)
+        DispatchQueue.global().async {
+            self.responder(self)
+        }
     }
 
 }

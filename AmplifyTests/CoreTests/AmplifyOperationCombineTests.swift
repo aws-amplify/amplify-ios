@@ -256,33 +256,3 @@ class AmplifyOperationCombineTests: XCTestCase {
 
 }
 
-struct MockPublisherRequest: AmplifyOperationRequest {
-    struct Options { }
-    let options = Options()
-}
-
-extension HubPayloadEventName {
-    static var mockPublisherOperation = "MockPublisherOperation"
-}
-
-class MockPublisherOperation: AmplifyOperation<MockPublisherRequest, Int, APIError> {
-    typealias Responder = (MockPublisherOperation) -> Void
-    let responder: Responder
-
-    init(responder: @escaping Responder, resultListener: ResultListener? = nil) {
-        self.responder = responder
-        super.init(
-            categoryType: .api,
-            eventName: .mockPublisherOperation,
-            request: MockPublisherRequest(),
-            resultListener: resultListener
-        )
-    }
-
-    override func main() {
-        DispatchQueue.global().async {
-            self.responder(self)
-        }
-    }
-
-}
