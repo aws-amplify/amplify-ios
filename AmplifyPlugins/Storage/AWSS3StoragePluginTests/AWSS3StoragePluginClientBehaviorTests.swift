@@ -35,7 +35,7 @@ class AWSS3StoragePluginClientBehaviorTests: AWSS3StoragePluginTests {
         let options = StorageGetURLRequest.Options(accessLevel: .private,
                                                    targetIdentityId: testIdentityId,
                                                    expires: testExpires,
-                                                   pluginOptions: [:])
+                                                   pluginOptions: AWSS3PluginOptions.passThroughKeyResolver)
 
         let operation = storagePlugin.getURL(key: testKey, options: options)
 
@@ -80,7 +80,7 @@ class AWSS3StoragePluginClientBehaviorTests: AWSS3StoragePluginTests {
     func testPluginGetWithOptions() {
         let options = StorageDownloadDataRequest.Options(accessLevel: .private,
                                                          targetIdentityId: testIdentityId,
-                                                         pluginOptions: [:])
+                                                         pluginOptions: AWSS3PluginOptions.passThroughKeyResolver)
 
         let operation = storagePlugin.downloadData(key: testKey,
                                                    options: options,
@@ -128,7 +128,7 @@ class AWSS3StoragePluginClientBehaviorTests: AWSS3StoragePluginTests {
     func testPluginDownloadFileWithOptions() {
         let options = StorageDownloadFileRequest.Options(accessLevel: .private,
                                                          targetIdentityId: testIdentityId,
-                                                         pluginOptions: [:])
+                                                         pluginOptions: AWSS3PluginOptions.passThroughKeyResolver)
 
         let operation = storagePlugin.downloadFile(key: testKey,
                                                    local: testURL,
@@ -180,7 +180,7 @@ class AWSS3StoragePluginClientBehaviorTests: AWSS3StoragePluginTests {
         let options = StorageUploadDataRequest.Options(accessLevel: .private,
                                                        metadata: [:],
                                                        contentType: testContentType,
-                                                       pluginOptions: [:])
+                                                       pluginOptions: AWSS3PluginOptions.passThroughKeyResolver)
 
         let operation = storagePlugin.uploadData(key: testKey,
                                                  data: testData,
@@ -236,7 +236,7 @@ class AWSS3StoragePluginClientBehaviorTests: AWSS3StoragePluginTests {
         let options = StorageUploadFileRequest.Options(accessLevel: .private,
                                                        metadata: [:],
                                                        contentType: testContentType,
-                                                       pluginOptions: [:])
+                                                       pluginOptions: AWSS3PluginOptions.passThroughKeyResolver)
 
         let operation = storagePlugin.uploadFile(key: testKey,
                                                  local: testURL,
@@ -282,7 +282,8 @@ class AWSS3StoragePluginClientBehaviorTests: AWSS3StoragePluginTests {
     }
 
     func testPluginRemoveWithOptions() {
-        let options = StorageRemoveRequest.Options(accessLevel: .private, pluginOptions: [:])
+        let options = StorageRemoveRequest.Options(accessLevel: .private,
+                                                   pluginOptions: AWSS3PluginOptions.passThroughKeyResolver)
 
         let operation = storagePlugin.remove(key: testKey, options: options)
 
@@ -322,7 +323,7 @@ class AWSS3StoragePluginClientBehaviorTests: AWSS3StoragePluginTests {
         let options = StorageListRequest.Options(accessLevel: .private,
                                                  targetIdentityId: testIdentityId,
                                                  path: testPath,
-                                                 pluginOptions: [:])
+                                                 pluginOptions: AWSS3PluginOptions.passThroughKeyResolver)
 
         let operation = storagePlugin.list(options: options)
 

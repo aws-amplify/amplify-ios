@@ -82,40 +82,32 @@ public class AWSS3StorageUploadDataOperation: AmplifyInProcessReportingOperation
             return
         }
 
-        let identityIdResult = authService.getIdentityId()
-        guard case let .success(identityId) = identityIdResult else {
-            if case let .failure(error) = identityIdResult {
-                dispatch(StorageError.authError(error.errorDescription, error.recoverySuggestion))
+        let options = request.options.pluginOptions as? AWSS3PluginOptions ??
+            AWSS3PluginOptions(customKeyResolver: StorageAccessLevelAwareKeyResolver(authService: authService))
+
+        switch options.customKeyResolver.resolvePrefix(for: request.options.accessLevel,
+                                                       targetIdentityId: request.options.targetIdentityId) {
+        case .success(let prefix):
+            let serviceKey = prefix + request.key
+            let serviceMetadata = StorageRequestUtils.getServiceMetadata(request.options.metadata)
+            if request.data.count > StorageUploadDataRequest.Options.multiPartUploadSizeThreshold {
+                storageService.multiPartUpload(serviceKey: serviceKey,
+                                               uploadSource: .data(request.data),
+                                               contentType: request.options.contentType,
+                                               metadata: serviceMetadata) { [weak self] event in
+                                                   self?.onServiceEvent(event: event)
+                                               }
+            } else {
+                storageService.upload(serviceKey: serviceKey,
+                                      uploadSource: .data(request.data),
+                                      contentType: request.options.contentType,
+                                      metadata: serviceMetadata) { [weak self] event in
+                                          self?.onServiceEvent(event: event)
+                                      }
             }
-
+        case .failure(let error):
+            dispatch(error)
             finish()
-            return
-        }
-
-        let serviceKey = StorageRequestUtils.getServiceKey(accessLevel: request.options.accessLevel,
-                                                           identityId: identityId,
-                                                           key: request.key)
-        let serviceMetadata = StorageRequestUtils.getServiceMetadata(request.options.metadata)
-
-        if isCancelled {
-            finish()
-            return
-        }
-
-        if request.data.count > StorageUploadDataRequest.Options.multiPartUploadSizeThreshold {
-            storageService.multiPartUpload(serviceKey: serviceKey,
-                                           uploadSource: .data(request.data),
-                                           contentType: request.options.contentType,
-                                           metadata: serviceMetadata) { [weak self] event in
-                                               self?.onServiceEvent(event: event)
-                                           }
-        } else {
-            storageService.upload(serviceKey: serviceKey,
-                                  uploadSource: .data(request.data),
-                                  contentType: request.options.contentType,
-                                  metadata: serviceMetadata) { [weak self] event in
-                                      self?.onServiceEvent(event: event)
-                                  }
         }
     }
 

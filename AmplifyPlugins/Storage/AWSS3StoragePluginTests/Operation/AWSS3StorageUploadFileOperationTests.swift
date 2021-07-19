@@ -43,8 +43,11 @@ class AWSS3StorageUploadFileOperationTests: AWSS3StorageOperationTestBase {
 
     func testUploadFileOperationGetIdentityIdError() {
         mockAuthService.getIdentityIdError = AuthError.service("", "", "")
+        let filePath = NSTemporaryDirectory() + UUID().uuidString + ".tmp"
+        let fileURL = URL(fileURLWithPath: filePath)
+        FileManager.default.createFile(atPath: filePath, contents: testData, attributes: nil)
         let options = StorageUploadFileRequest.Options(accessLevel: .protected)
-        let request = StorageUploadFileRequest(key: testKey, local: testURL, options: options)
+        let request = StorageUploadFileRequest(key: testKey, local: fileURL, options: options)
 
         let failedInvoked = expectation(description: "failed was invoked on operation")
         let operation = AWSS3StorageUploadFileOperation(request,

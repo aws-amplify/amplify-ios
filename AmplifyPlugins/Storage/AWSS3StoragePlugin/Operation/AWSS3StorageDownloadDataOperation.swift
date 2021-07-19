@@ -82,29 +82,19 @@ public class AWSS3StorageDownloadDataOperation: AmplifyInProcessReportingOperati
             return
         }
 
-        let identityIdResult = authService.getIdentityId()
+        let options = request.options.pluginOptions as? AWSS3PluginOptions ??
+            AWSS3PluginOptions(customKeyResolver: StorageAccessLevelAwareKeyResolver(authService: authService))
 
-        guard case let .success(identityId) = identityIdResult else {
-            if case let .failure(error) = identityIdResult {
-                dispatch(StorageError.authError(error.errorDescription, error.recoverySuggestion))
+        switch options.customKeyResolver.resolvePrefix(for: request.options.accessLevel,
+                                                       targetIdentityId: request.options.targetIdentityId) {
+        case .success(let prefix):
+            let serviceKey = prefix + request.key
+            storageService.download(serviceKey: serviceKey, fileURL: nil) { [weak self] event in
+                self?.onServiceEvent(event: event)
             }
-
+        case .failure(let error):
+            dispatch(error)
             finish()
-            return
-        }
-
-        let serviceKey = StorageRequestUtils.getServiceKey(accessLevel: request.options.accessLevel,
-                                                           identityId: identityId,
-                                                           key: request.key,
-                                                           targetIdentityId: request.options.targetIdentityId)
-
-        if isCancelled {
-            finish()
-            return
-        }
-
-        storageService.download(serviceKey: serviceKey, fileURL: nil) { [weak self] event in
-            self?.onServiceEvent(event: event)
         }
     }
 
